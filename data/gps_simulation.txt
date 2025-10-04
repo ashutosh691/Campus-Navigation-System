@@ -1,0 +1,5 @@
+# Sample GPS trace file
+# Format: latitude,longitude,speed_kmh
+40.712700,-74.005900,5
+40.713800,-74.004800,5
+40.714900,-74.004100,5

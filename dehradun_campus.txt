@@ -1,0 +1,30 @@
+# Fictional University Campus, Dehradun, India
+# Format: num_nodes num_edges
+10 13
+
+# Nodes: latitude longitude name
+30.32501 78.04105 Main_Gate
+30.32615 78.04182 Admin_Block
+30.32703 78.04255 Library
+30.32650 78.04381 Engineering_Dept
+30.32588 78.04464 Science_Labs
+30.32495 78.04350 Cafeteria
+30.32441 78.04212 Student_Hostel
+30.32785 78.04344 Auditorium
+30.32851 78.04159 Sports_Complex
+30.32555 78.04250 Central_Plaza
+
+# Edges: source_node destination_node weight(0=auto)
+0 1 0
+1 2 0
+1 9 0
+2 3 0
+2 7 0
+3 4 0
+4 5 0
+5 6 0
+5 9 0
+6 9 0
+7 8 0
+8 1 0
+2 9 0
