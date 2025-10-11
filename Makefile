@@ -2,29 +2,50 @@
 CC = gcc
 CFLAGS = -Wall -Wextra -g -std=c11
 
-# Project Files
-SRCS = main.c graph.c algorithms.c utils.c
+# --- GTK specific flags ---
+GTK_CFLAGS = $(shell pkg-config --cflags gtk4)
+GTK_LIBS = $(shell pkg-config --libs gtk4)
 
-# Object files are derived from the source files
-OBJS = $(SRCS:.c=.o)
+# --- Command-line version ---
+CLI_SRCS = main.c graph.c algorithms.c utils.c
+CLI_OBJS = $(CLI_SRCS:.c=.o)
+CLI_TARGET = navigator
 
-# The name of the final executable
-TARGET = navigator
+# --- GUI version ---
+GUI_NON_GTK_SRCS = graph.c algorithms.c utils.c
+GUI_NON_GTK_OBJS = $(GUI_NON_GTK_SRCS:.c=.o)
+GUI_TARGET = navigator-gui
 
-# Default target: builds the entire project
-all: $(TARGET)
+# --- Build Rules ---
 
-# Linking rule: combines all object files into the final executable
-$(TARGET): $(OBJS)
-	$(CC) $(CFLAGS) -o $(TARGET) $(OBJS) -lm
+# Default target: build both versions
+all: $(CLI_TARGET) $(GUI_TARGET)
 
-# Compilation rule: compiles each .c file into a .o object file
+# Rule to build the command-line version
+$(CLI_TARGET): $(CLI_OBJS)
+	$(CC) $(CFLAGS) -o $@ $^ -lm
+
+# Rule to build the GUI version
+$(GUI_TARGET): main-gtk.o $(GUI_NON_GTK_OBJS)
+	$(CC) $(CFLAGS) -o $@ $^ $(GTK_LIBS) -lm
+
+# Target specifically for the GUI
+gui: $(GUI_TARGET)
+
+# --- Compilation Rules ---
+
+# This is the NEW rule specifically for main-gtk.c
+# It adds the GTK flags during compilation.
+main-gtk.o: main-gtk.c
+	$(CC) $(CFLAGS) $(GTK_CFLAGS) -c $< -o $@
+
+# This is the general rule for all other .c files
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
-# Clean target: removes all generated files
+# Clean target: remove all generated files
 clean:
-	rm -f $(OBJS) $(TARGET)
+	rm -f *.o $(CLI_TARGET) $(GUI_TARGET)
 
 # Phony target declaration
-.PHONY: all clean
+.PHONY: all gui clean
