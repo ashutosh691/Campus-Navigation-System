@@ -1,10 +1,9 @@
 /*
  * Pathfinding Algorithms Implementation
- * Reduced to Dijkstra's algorithm.
- * Updated to fix compiler warnings.
  */
 
  #include "algorithms.h"
+ #include "utils.h" 
  #include <stdio.h>
  #include <stdlib.h>
  #include <float.h>
@@ -48,15 +47,15 @@
      return node_id;
  }
  
- // --- Helper Function (UPDATED) ---
+ // --- Helper Function  ---
  static int* reconstruct_path(const int* predecessors, int start_id, int end_id, int* path_length) {
      int len = 0;
      for (int at = end_id; at != -1; at = predecessors[at]) len++;
  
      int* path = malloc(len * sizeof(int));
-     if (!path) { 
-         *path_length = 0; 
-         return NULL; 
+     if (!path) {
+         *path_length = 0;
+         return NULL;
      }
  
      *path_length = len;
@@ -66,17 +65,38 @@
          current = predecessors[current];
      }
  
-     // Verify that the path actually starts where it should.
      if (len > 0 && path[0] != start_id) {
          free(path);
          *path_length = 0;
-         return NULL; // Path is invalid!
+         return NULL;
      }
      
      return path;
  }
  
- // --- Core Algorithm (UPDATED) ---
+ // --- UPDATED A* HEURISTIC FUNCTION ---
+ /**
+  * Calculates the heuristic (straight-line distance) between two nodes
+  * using the Haversine formula, consistent with graph.c.
+  * ASSUMPTION: get_node(graph, id) returns a Node* with .latitude and .longitude
+  */
+ static double heuristic(const Graph* graph, int node_id, int end_id) {
+     const Node* current = get_node(graph, node_id);
+     const Node* end = get_node(graph, end_id);
+ 
+     if (!current || !end) {
+         return 0.0;
+     }
+     
+     // Use the Haversine distance as the heuristic
+     // This is admissible because it's the true shortest-line distance
+     return haversine_distance(
+         current->latitude, current->longitude,
+         end->latitude, end->longitude
+     );
+ }
+ 
+ // --- Core Algorithm (Dijkstra ) ---
  PathResult dijkstra_shortest_path(const Graph* graph, int start_id, int end_id) {
      PathResult result = { .found = false };
      int num_nodes = get_node_count(graph);
@@ -109,7 +129,6 @@
      if (distances[end_id] != INFINITY_VAL) {
          result.path = reconstruct_path(predecessors, start_id, end_id, &result.path_length);
          
-         // Ensure the reconstructed path is valid before setting found=true
          if (result.path) {
              result.total_distance = distances[end_id];
              result.found = true;
@@ -122,7 +141,63 @@
      return result;
  }
  
- // --- Result Handling ---
+ // --- Core Algorithm (A* - Logic, but uses new heuristic) ---
+ PathResult a_star_shortest_path(const Graph* graph, int start_id, int end_id) {
+     PathResult result = { .found = false };
+     int num_nodes = get_node_count(graph);
+ 
+     double* g_scores = malloc(num_nodes * sizeof(double));
+     double* f_scores = malloc(num_nodes * sizeof(double));
+     int* predecessors = malloc(num_nodes * sizeof(int));
+     PriorityQueue* pq = pq_create();
+ 
+     for (int i = 0; i < num_nodes; i++) {
+         g_scores[i] = INFINITY_VAL;
+         f_scores[i] = INFINITY_VAL;
+         predecessors[i] = -1;
+     }
+ 
+     g_scores[start_id] = 0.0;
+     f_scores[start_id] = heuristic(graph, start_id, end_id);
+     
+     pq_insert(pq, start_id, f_scores[start_id]);
+ 
+     while (!pq_is_empty(pq)) {
+         int current_id = pq_extract_min(pq);
+         if (current_id == end_id) break;
+ 
+         const Edge* edge = get_edges(graph, current_id);
+         while (edge) {
+             int neighbor_id = edge->destination_id;
+             double tentative_g_score = g_scores[current_id] + edge->weight;
+ 
+             if (tentative_g_score < g_scores[neighbor_id]) {
+                 predecessors[neighbor_id] = current_id;
+                 g_scores[neighbor_id] = tentative_g_score;
+                 f_scores[neighbor_id] = tentative_g_score + heuristic(graph, neighbor_id, end_id);
+                 pq_insert(pq, neighbor_id, f_scores[neighbor_id]);
+             }
+             edge = edge->next;
+         }
+     }
+ 
+     if (g_scores[end_id] != INFINITY_VAL) {
+         result.path = reconstruct_path(predecessors, start_id, end_id, &result.path_length);
+         
+         if (result.path) {
+             result.total_distance = g_scores[end_id];
+             result.found = true;
+         }
+     }
+ 
+     free(g_scores);
+     free(f_scores);
+     free(predecessors);
+     pq_destroy(pq);
+     return result;
+ }
+
+
  void free_path_result(PathResult* result) {
      if (result && result->path) {
          free(result->path);
@@ -137,7 +212,7 @@
          printf("\n--- No Path Found ---\n");
          return;
      }
-     printf("\n--- Path Result ---\n");
+     printf("\n--- Path Result --n");
      printf("Total Distance: %.2f km\n", result->total_distance);
      printf("Route:\n");
      for (int i = 0; i < result->path_length; i++) {
