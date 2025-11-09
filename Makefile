@@ -1,51 +1,46 @@
 # Compiler and Flags
 CC = gcc
+# CFLAGS: -Wall (all warnings), -Wextra (more warnings), -g (debug symbols), -std=c11 (C standard)
 CFLAGS = -Wall -Wextra -g -std=c11
 
 # --- GTK specific flags ---
+# Use pkg-config to get the correct flags for GTK 4
 GTK_CFLAGS = $(shell pkg-config --cflags gtk4)
 GTK_LIBS = $(shell pkg-config --libs gtk4)
 
-# --- Command-line version ---
-CLI_SRCS = main.c graph.c algorithms.c utils.c
-CLI_OBJS = $(CLI_SRCS:.c=.o)
-CLI_TARGET = navigator
+# --- Source Files ---
+# All .c files needed for the GUI
+SRCS = main-gtk.c graph.c algorithms.c utils.c
+# Automatically generate object file names (e.g., main-gtk.o, graph.o)
+OBJS = $(SRCS:.c=.o)
 
-# --- GUI version ---
-GUI_NON_GTK_SRCS = graph.c algorithms.c utils.c
-GUI_NON_GTK_OBJS = $(GUI_NON_GTK_SRCS:.c=.o)
-GUI_TARGET = navigator-gui
+# --- Target Executable ---
+TARGET = navigator-gui
 
 # --- Build Rules ---
 
-# Default target: build both versions
-all: $(CLI_TARGET) $(GUI_TARGET)
+# Default target: build the GUI executable
+all: $(TARGET)
 
-# Rule to build the command-line version
-$(CLI_TARGET): $(CLI_OBJS)
-	$(CC) $(CFLAGS) -o $@ $^ -lm
-
-# Rule to build the GUI version
-$(GUI_TARGET): main-gtk.o $(GUI_NON_GTK_OBJS)
+# Rule to link the GUI executable
+# Needs all object files ($^), the GTK libraries, and the math library (-lm)
+$(TARGET): $(OBJS)
 	$(CC) $(CFLAGS) -o $@ $^ $(GTK_LIBS) -lm
-
-# Target specifically for the GUI
-gui: $(GUI_TARGET)
 
 # --- Compilation Rules ---
 
-# This is the NEW rule specifically for main-gtk.c
-# It adds the GTK flags during compilation.
+# Special rule for main-gtk.c: it NEEDS the GTK_CFLAGS
 main-gtk.o: main-gtk.c
 	$(CC) $(CFLAGS) $(GTK_CFLAGS) -c $< -o $@
 
-# This is the general rule for all other .c files
+# General rule for all other .c files
+# These don't need the GTK flags for compilation
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 # Clean target: remove all generated files
 clean:
-	rm -f *.o $(CLI_TARGET) $(GUI_TARGET)
+	rm -f *.o $(TARGET)
 
-# Phony target declaration
-.PHONY: all gui clean
+# Phony target declaration (tells make that 'all' and 'clean' aren't files)
+.PHONY: all clean
