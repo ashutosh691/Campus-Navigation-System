@@ -1,30 +1,56 @@
-# Fictional University Campus, Dehradun, India
-# Format: num_nodes num_edges
-10 13
+Dehradun Campus (Graphic Era - 20 Node Map)
 
-# Nodes: latitude longitude name
-30.32501 78.04105 Main_Gate
-30.32615 78.04182 Admin_Block
-30.32703 78.04255 Library
-30.32650 78.04381 Engineering_Dept
-30.32588 78.04464 Science_Labs
-30.32495 78.04350 Cafeteria
-30.32441 78.04212 Student_Hostel
-30.32785 78.04344 Auditorium
-30.32851 78.04159 Sports_Complex
-30.32555 78.04250 Central_Plaza
+Format: [num_nodes] [num_edges]
 
-# Edges: source_node destination_node weight(0=auto)
+20 21
+
+Nodes
+
+Format: [latitude] [longitude] [Name]
+
+30.268680 77.994735 Gate_1
+30.267604 77.995148 GEU_Main_Block
+30.266932 77.995058 Badminton_Court
+30.268113 77.996279 Mechanical_Block
+30.267920 77.996540 Quick_Bite_Cafe
+30.267756 77.996383 Petroleum_Engineering_Block
+30.267481 77.996455 Old_MCA_Block
+30.267281 77.996368 Biotech_Block
+30.266852 77.995565 Civil_Block
+30.267420 77.995671 Param_Computer_Lab
+30.267651 77.995720 Aryabhatta_Computer_Lab
+30.268520 77.995938 Priyadarshini_Girls_Hostel
+30.267588 77.994150 CS_Azad_Boys_Hostel
+30.267684 77.993937 Sardar_Patel_Boys_Hostel
+30.267813 77.993688 Rani_Laxmi_Bai_Girls_Hostel
+30.268338 77.993840 CSIT_Gate
+30.268643 77.993576 CSIT_Block
+30.269303 77.992776 Paramedical_Block
+30.267326 77.995635 Santoshanand_Library
+30.267617 77.997021 MBA_Block
+
+Edges (Bidirectional, weight will be auto-calculated)
+
+Format: [source_node] [destination_node] [weight(0=auto)]
+
 0 1 0
+0 11 0
 1 2 0
-1 9 0
-2 3 0
-2 7 0
+1 8 0
+1 18 0
+1 19 0
 3 4 0
+3 5 0
+3 19 0
 4 5 0
-5 6 0
-5 9 0
-6 9 0
-7 8 0
-8 1 0
-2 9 0
+4 6 0
+4 7 0
+8 9 0
+8 10 0
+8 18 0
+15 12 0
+15 16 0
+16 17 0
+11 12 0
+12 13 0
+13 14 0
