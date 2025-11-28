@@ -1,7 +1,3 @@
-/*
- * Utility Functions Implementation
- */
-
  #include "utils.h"
  #include <math.h>
  
