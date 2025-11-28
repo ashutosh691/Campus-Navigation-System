@@ -1,9 +1,5 @@
-/*
- * Graph Data Structure Implementation
- */
-
  #include "graph.h"
- #include "utils.h"  // For haversine_distance
+ #include "utils.h"  
  #include <stdio.h>
  #include <stdlib.h>
  #include <string.h>
@@ -105,10 +101,9 @@
  }
  
  bool add_bidirectional_edge(Graph* graph, int node1_id, int node2_id, double weight, const char* road_name) {
-     // Add both directions
+     // Assuming that the path is bidirectional i.e. two way
      if (!add_edge(graph, node1_id, node2_id, weight, road_name)) return false;
      if (!add_edge(graph, node2_id, node1_id, weight, road_name)) {
-         // Technically should clean up the first edge, but this is rare
          return false;
      }
      return true;
@@ -137,8 +132,7 @@
          printf("Graph is NULL.\n");
          return;
      }
-     printf("--- Graph Info (Nodes: %d, Edges: %d, Capacity: %d) ---\n", 
-            graph->num_nodes, graph->num_edges, graph->capacity);
+     printf("Graph Info (Nodes: %d, Edges: %d, Capacity: %d)\n", graph->num_nodes, graph->num_edges, graph->capacity);
      for (int i = 0; i < graph->num_nodes; i++) {
          const Node* n = &graph->nodes[i];
          printf("Node %d: '%s' (%.5f, %.5f)\n", n->id, n->name, n->latitude, n->longitude);
@@ -152,7 +146,7 @@
              printf("\n");
          }
      }
-     printf("------------------------------------------------------\n");
+     printf("\n");
  }
  
  bool load_road_network(Graph* graph, const char* filename) {
@@ -199,7 +193,7 @@
          double lat, lon;
          char name[64] = "";
          // Use sscanf to parse the line
-         if (sscanf(line, "%lf %lf %63[^\n]", &lat, &lon, name) >= 2) {
+         if (sscanf(line, "%lf %lf %59[^\n]", &lat, &lon, name) >= 2) {
              if (add_node(graph, lat, lon, name) == -1) {
                  fprintf(stderr, "[Graph Error] load_road_network: Failed to add node.\n");
                  fclose(file);
@@ -224,12 +218,12 @@
          if (line[0] == '#' || line[0] == '\n') continue;
          
          int source, dest;
-         double weight = 0.0; // Default to 0, which triggers auto-calc
+         double weight = 0.0; 
          
          int items_scanned = sscanf(line, "%d %d %lf", &source, &dest, &weight);
          
          if (items_scanned >= 2) {
-             if (weight <= 0) { // If weight is 0 or not provided, calculate it
+             if (weight <= 0) { 
                  const Node* n1 = get_node(graph, source);
                  const Node* n2 = get_node(graph, dest);
                  if (!n1 || !n2) {
@@ -250,7 +244,6 @@
      if (edges_read != file_edges_count) {
          fprintf(stderr, "[Graph Error] load_road_network: Expected %d edges, but only read %d.\n", 
                  file_edges_count, edges_read);
-         // This is not a fatal error, so we don't return false
      }
  
      fclose(file);
