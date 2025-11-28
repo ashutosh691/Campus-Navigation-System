@@ -1,7 +1,3 @@
-/*
- * Utility Functions - Reduced to core geographic calculations.
- */
-
  #ifndef UTILS_H
  #define UTILS_H
  
