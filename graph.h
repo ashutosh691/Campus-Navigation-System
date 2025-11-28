@@ -1,7 +1,3 @@
-/*
- * Graph Data Structure for Road Network Representation
- */
-
  #ifndef GRAPH_H
  #define GRAPH_H
  
@@ -11,13 +7,13 @@
      int id;
      double latitude;
      double longitude;
-     char name[64];
+     char name[60];
  } Node;
  
  typedef struct Edge {
      int destination_id;
      double weight;
-     char road_name[32];
+     char road_name[30];
      struct Edge* next;
  } Edge;
  
