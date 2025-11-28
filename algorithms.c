@@ -1,22 +1,27 @@
-/*
- * Pathfinding Algorithms Implementation
- */
-
  #include "algorithms.h"
- #include "utils.h" 
+ #include "utils.h"
  #include <stdio.h>
  #include <stdlib.h>
  #include <float.h>
+ #include <limits.h>
  
  #define INFINITY_VAL DBL_MAX
  
- // --- Internal Priority Queue ---
- typedef struct PQNode { int node_id; double priority; struct PQNode* next; } PQNode;
- typedef struct { PQNode* head; } PriorityQueue;
+ //Internal Priority Queue 
+ typedef struct PQNode { 
+     int node_id; 
+     double priority; 
+     struct PQNode* next;
+ } PQNode;
+
+ typedef struct { 
+     PQNode* head; 
+ } PriorityQueue;
  
  static PriorityQueue* pq_create() {
      return calloc(1, sizeof(PriorityQueue));
  }
+
  static void pq_destroy(PriorityQueue* pq) {
      PQNode* current = pq->head;
      while (current) {
@@ -26,18 +31,23 @@
      }
      free(pq);
  }
+
  static bool pq_is_empty(const PriorityQueue* pq) { return !pq || !pq->head; }
+
  static void pq_insert(PriorityQueue* pq, int node_id, double priority) {
      PQNode* new_node = malloc(sizeof(PQNode));
-     new_node->node_id = node_id; new_node->priority = priority;
+     new_node->node_id = node_id; 
+     new_node->priority = priority;
      if (!pq->head || priority < pq->head->priority) {
          new_node->next = pq->head; pq->head = new_node;
      } else {
          PQNode* current = pq->head;
          while (current->next && current->next->priority <= priority) current = current->next;
-         new_node->next = current->next; current->next = new_node;
+         new_node->next = current->next; 
+         current->next = new_node;
      }
  }
+
  static int pq_extract_min(PriorityQueue* pq) {
      if (pq_is_empty(pq)) return -1;
      PQNode* min_node = pq->head;
@@ -47,7 +57,6 @@
      return node_id;
  }
  
- // --- Helper Function  ---
  static int* reconstruct_path(const int* predecessors, int start_id, int end_id, int* path_length) {
      int len = 0;
      for (int at = end_id; at != -1; at = predecessors[at]) len++;
@@ -74,12 +83,7 @@
      return path;
  }
  
- // --- UPDATED A* HEURISTIC FUNCTION ---
- /**
-  * Calculates the heuristic (straight-line distance) between two nodes
-  * using the Haversine formula, consistent with graph.c.
-  * ASSUMPTION: get_node(graph, id) returns a Node* with .latitude and .longitude
-  */
+ // A* HEURISTIC FUNCTION
  static double heuristic(const Graph* graph, int node_id, int end_id) {
      const Node* current = get_node(graph, node_id);
      const Node* end = get_node(graph, end_id);
@@ -87,21 +91,16 @@
      if (!current || !end) {
          return 0.0;
      }
-     
-     // Use the Haversine distance as the heuristic
-     // This is admissible because it's the true shortest-line distance
-     return haversine_distance(
-         current->latitude, current->longitude,
-         end->latitude, end->longitude
-     );
+
+     return haversine_distance(current->latitude, current->longitude,end->latitude, end->longitude);
  }
  
- // --- Core Algorithm (Dijkstra ) ---
+ // Dijkstra 
  PathResult dijkstra_shortest_path(const Graph* graph, int start_id, int end_id) {
      PathResult result = { .found = false };
      int num_nodes = get_node_count(graph);
-     double* distances = malloc(num_nodes * sizeof(double));
-     int* predecessors = malloc(num_nodes * sizeof(int));
+     double* distances = calloc(num_nodes, sizeof(double));
+     int* predecessors = calloc(num_nodes, sizeof(int));
      PriorityQueue* pq = pq_create();
  
      for (int i = 0; i < num_nodes; i++) {
@@ -141,19 +140,19 @@
      return result;
  }
  
- // --- Core Algorithm (A* - Logic, but uses new heuristic) ---
+ // A*
  PathResult a_star_shortest_path(const Graph* graph, int start_id, int end_id) {
      PathResult result = { .found = false };
      int num_nodes = get_node_count(graph);
  
-     double* g_scores = malloc(num_nodes * sizeof(double));
-     double* f_scores = malloc(num_nodes * sizeof(double));
-     int* predecessors = malloc(num_nodes * sizeof(int));
+     double* g_scores = calloc(num_nodes, sizeof(double));
+     double* f_scores = calloc(num_nodes, sizeof(double));
+     int* predecessors = calloc(num_nodes, sizeof(int));
      PriorityQueue* pq = pq_create();
  
      for (int i = 0; i < num_nodes; i++) {
-         g_scores[i] = INFINITY_VAL;
-         f_scores[i] = INFINITY_VAL;
+         g_scores[i] = INFINITY_VAL;    //actual cost from starting
+         f_scores[i] = INFINITY_VAL;    //guess + heuristic for guiding a* in a straight line
          predecessors[i] = -1;
      }
  
@@ -196,8 +195,7 @@
      pq_destroy(pq);
      return result;
  }
-
-
+ 
  void free_path_result(PathResult* result) {
      if (result && result->path) {
          free(result->path);
@@ -212,7 +210,7 @@
          printf("\n--- No Path Found ---\n");
          return;
      }
-     printf("\n--- Path Result --n");
+     printf("\n\tPath Result\n");
      printf("Total Distance: %.2f km\n", result->total_distance);
      printf("Route:\n");
      for (int i = 0; i < result->path_length; i++) {
@@ -220,5 +218,5 @@
          const Node* node = get_node(graph, node_id);
          printf("  %d. Node %d (%s)\n", i + 1, node_id, node->name);
      }
-     printf("-------------------\n");
+     printf("\n");
  }
