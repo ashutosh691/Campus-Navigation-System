@@ -1,7 +1,3 @@
-/*
- * Pathfinding Algorithms for Navigation System
- */
-
  #ifndef ALGORITHMS_H
  #define ALGORITHMS_H
  
@@ -15,9 +11,9 @@
      bool found;
  } PathResult;
  
- // Core Pathfinding API
+ // Core Pathfinding 
  PathResult dijkstra_shortest_path(const Graph* graph, int start_id, int end_id);
- PathResult a_star_shortest_path(const Graph* graph, int start_id, int end_id); // <-- NEW
+ PathResult a_star_shortest_path(const Graph* graph, int start_id, int end_id); 
  
  // Result Handling
  void free_path_result(PathResult* result);
