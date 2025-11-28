@@ -1,6 +1,6 @@
 #include <gtk/gtk.h>
-#include <cairo.h> // Include the Cairo graphics library
-#include <math.h>  // Include for fmin, cos, and M_PI
+#include <cairo.h> 
+#include <math.h>  
 #include "graph.h"
 #include "algorithms.h"
 
@@ -19,19 +19,14 @@ typedef struct {
     // Bounding box of the loaded graph for coordinate mapping
     double min_lon, max_lon, min_lat, max_lat;
     
-    // --- NEW ---
     // The true, corrected aspect ratio of the map
     double map_aspect_ratio; 
 
 } AppWidgets;
 
-
-// --- Coordinate Mapping ---
-
-/**
- * Finds the min/max latitude and longitude in the graph
- * and calculates the correct map aspect ratio.
- */
+/*
+ Finds the min/max latitude and longitude in the graph and calculates the correct map aspect ratio.
+*/
 static void find_graph_bounds(AppWidgets* app) {
     if (!app->graph || get_node_count(app->graph) == 0) {
         app->min_lon = app->min_lat = 0;
@@ -52,7 +47,6 @@ static void find_graph_bounds(AppWidgets* app) {
         if (n->latitude > app->max_lat) app->max_lat = n->latitude;
     }
 
-    // Add a little padding so nodes aren't on the exact edge
     double padding_lon = (app->max_lon - app->min_lon) * 0.05;
     double padding_lat = (app->max_lat - app->min_lat) * 0.05;
     
@@ -64,7 +58,6 @@ static void find_graph_bounds(AppWidgets* app) {
     app->min_lat -= padding_lat;
     app->max_lat += padding_lat;
     
-    // --- NEW: Calculate Correct Aspect Ratio ---
     double map_width_geo = app->max_lon - app->min_lon;
     double map_height_geo = app->max_lat - app->min_lat;
     
@@ -77,11 +70,10 @@ static void find_graph_bounds(AppWidgets* app) {
     if (map_height_geo == 0.0) app->map_aspect_ratio = 1.0; // Handle single line case
 }
 
-/**
- * Remaps a longitude/latitude coordinate to a normalized (0.0 to 1.0) coordinate.
- */
-static void get_normalized_coords(AppWidgets* app, double lon, double lat, 
-                                  double* nx, double* ny) 
+/*
+ Remaps a longitude/latitude coordinate to a normalized (0.0 to 1.0) coordinate.
+*/
+static void get_normalized_coords(AppWidgets* app, double lon, double lat, double* nx, double* ny) 
 {
     double map_width = app->max_lon - app->min_lon;
     double map_height = app->max_lat - app->min_lat;
@@ -94,20 +86,20 @@ static void get_normalized_coords(AppWidgets* app, double lon, double lat,
 
 // --- Drawing Function ---
 
-/**
- * This is the main drawing callback for the GtkDrawingArea.
- * It's called every time the map needs to be redrawn.
- */
+/*
+ This is the main drawing callback for the GtkDrawingArea.
+ It's called every time the map needs to be redrawn.
+*/
 static void on_draw(GtkDrawingArea* area, cairo_t* cr, int width, int height, gpointer data) {
     AppWidgets* app = (AppWidgets*)data;
 
-    // 1. Draw background
+    // Draw background
     cairo_set_source_rgb(cr, 0.1, 0.1, 0.1); // Dark background
     cairo_paint(cr);
 
     if (!app->graph) return; // No graph loaded
 
-    // --- NEW: Aspect-Ratio-Preserving Scaling ---
+    // Aspect-Ratio-Preserving Scaling 
     double window_aspect_ratio = (double)width / (double)height;
     double scale_x, scale_y, offset_x, offset_y;
 
@@ -124,19 +116,19 @@ static void on_draw(GtkDrawingArea* area, cairo_t* cr, int width, int height, gp
         offset_x = 0;
         offset_y = (height - scale_y) / 2.0;
     }
-    // --- End of new scaling logic ---
 
 
     // 2. Draw all edges (roads)
     cairo_set_source_rgb(cr, 0.5, 0.5, 0.5); // Grey for roads
     cairo_set_line_width(cr, 1.0);
+    // Variables for edge drawing are correctly defined here:
+    double x1, y1, x2, y2, nx1, ny1, nx2, ny2; 
     for (int i = 0; i < get_node_count(app->graph); i++) {
         const Node* n1 = get_node(app->graph, i);
         const Edge* edge = get_edges(app->graph, n1->id);
         while (edge) {
             if (n1->id < edge->destination_id) { // Only draw edges once
                 const Node* n2 = get_node(app->graph, edge->destination_id);
-                double x1, y1, x2, y2, nx1, ny1, nx2, ny2;
                 
                 get_normalized_coords(app, n1->longitude, n1->latitude, &nx1, &ny1);
                 get_normalized_coords(app, n2->longitude, n2->latitude, &nx2, &ny2);
@@ -156,9 +148,11 @@ static void on_draw(GtkDrawingArea* area, cairo_t* cr, int width, int height, gp
     }
 
     // 3. Draw all nodes (intersections) and their names
+    // Declare the variables needed for this section:
+    double x, y, nx, ny; 
     for (int i = 0; i < get_node_count(app->graph); i++) {
         const Node* n = get_node(app->graph, i);
-        double x, y, nx, ny;
+        
         get_normalized_coords(app, n->longitude, n->latitude, &nx, &ny);
         
         // Apply the new scaling
@@ -167,7 +161,8 @@ static void on_draw(GtkDrawingArea* area, cairo_t* cr, int width, int height, gp
         
         // Draw the node circle
         cairo_set_source_rgb(cr, 0.2, 0.8, 1.0); // Light blue for nodes
-        cairo_arc(cr, x, y, 3.0, 0, 2 * M_PI); // 3px radius circle
+        // FONT CHANGE 1: Increase node radius from 3.0 to 5.0
+        cairo_arc(cr, x, y, 5.0, 0, 2 * M_PI); // 5px radius circle
         cairo_fill_preserve(cr);
         cairo_set_source_rgb(cr, 0.9, 0.9, 0.9);
         cairo_set_line_width(cr, 0.5);
@@ -179,9 +174,11 @@ static void on_draw(GtkDrawingArea* area, cairo_t* cr, int width, int height, gp
         
         cairo_set_source_rgb(cr, 0.9, 0.9, 0.9);
         cairo_select_font_face(cr, "Sans", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
-        cairo_set_font_size(cr, 9.0);
+        // FONT CHANGE 2: Increase font size from 9.0 to 12.0
+        cairo_set_font_size(cr, 12.0); 
         
-        cairo_move_to(cr, x + 5, y + 4);
+        // FONT CHANGE 3: Adjust position to accommodate larger circle/font
+        cairo_move_to(cr, x + 7, y + 5); 
         cairo_show_text(cr, label_text);
     }
 
@@ -189,10 +186,10 @@ static void on_draw(GtkDrawingArea* area, cairo_t* cr, int width, int height, gp
     if (app->path_result.found) {
         cairo_set_source_rgb(cr, 1.0, 0.0, 0.2); // Bright red for path
         cairo_set_line_width(cr, 3.0);
+        // x1, y1, x2, y2, nx1, ny1, nx2, ny2 are still in scope from section 2
         for (int i = 0; i < app->path_result.path_length - 1; i++) {
             const Node* n1 = get_node(app->graph, app->path_result.path[i]);
             const Node* n2 = get_node(app->graph, app->path_result.path[i + 1]);
-            double x1, y1, x2, y2, nx1, ny1, nx2, ny2;
 
             get_normalized_coords(app, n1->longitude, n1->latitude, &nx1, &ny1);
             get_normalized_coords(app, n2->longitude, n2->latitude, &nx2, &ny2);
@@ -213,9 +210,9 @@ static void on_draw(GtkDrawingArea* area, cairo_t* cr, int width, int height, gp
 
 // --- GTK Callbacks ---
 
-/**
- * Callback for the "Find Path" button.
- */
+/*
+ Callback for the "Find Path" button.
+*/
 static void on_find_path_clicked(GtkWidget* widget, gpointer data) {
     AppWidgets* app = (AppWidgets*)data;
 
@@ -259,9 +256,9 @@ static void on_find_path_clicked(GtkWidget* widget, gpointer data) {
     gtk_widget_queue_draw(GTK_WIDGET(app->drawing_area));
 }
 
-/**
- * Loads the single, hard-coded default map.
- */
+/*
+ Loads the single, hard-coded default map.
+*/
 static void load_default_map(gpointer data) {
     AppWidgets* app = (AppWidgets*)data;
     const char* map_file = "dehradun_campus.txt"; // Hard-coded map
@@ -308,9 +305,9 @@ static void load_default_map(gpointer data) {
     gtk_widget_queue_draw(GTK_WIDGET(app->drawing_area));
 }
 
-/**
- * Frees all allocated memory when the window is closed.
- */
+/*
+ Frees all allocated memory when the window is closed.
+*/
 static void on_window_destroy(GtkWidget* widget, gpointer data) {
     AppWidgets* app = (AppWidgets*)data;
     if (app->graph) {
@@ -320,9 +317,9 @@ static void on_window_destroy(GtkWidget* widget, gpointer data) {
     g_slice_free(AppWidgets, app);
 }
 
-/**
- * Main function to build the application UI.
- */
+/*
+ Main function to build the application UI.
+*/
 static void on_app_activate(GtkApplication* app, gpointer user_data) {
     GtkWidget* window = gtk_application_window_new(app);
     gtk_window_set_title(GTK_WINDOW(window), "Campus Navigation System (Visual)");
@@ -439,9 +436,9 @@ static void on_app_activate(GtkApplication* app, gpointer user_data) {
     gtk_window_present(GTK_WINDOW(window));
 }
 
-/**
- * Entry point of the application.
- */
+/*
+ Entry point of the application.
+*/
 int main(int argc, char** argv) {
     GtkApplication* app = gtk_application_new("com.campus.navigator.visual", G_APPLICATION_DEFAULT_FLAGS);
     g_signal_connect(app, "activate", G_CALLBACK(on_app_activate), NULL);
