@@ -245,10 +245,14 @@ Campus-Navigation-System
 # Author
 
 **Ashutosh Upreti**
-## Note 
-- The provided steps are for gtk version
+
 GitHub  
 https://github.com/ashutosh691
 
 LinkedIn  
 https://www.linkedin.com/in/ashutosh-upreti-835540321
+
+
+
+## Note 
+- The provided steps are for gtk version
