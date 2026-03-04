@@ -245,7 +245,8 @@ Campus-Navigation-System
 # Author
 
 **Ashutosh Upreti**
-
+## Note 
+- The provided steps are for gtk version
 GitHub  
 https://github.com/ashutosh691
 
