@@ -48,7 +48,7 @@ Campus layout is loaded from a **simple `.txt` file** containing:
 ![Interface using GTK](screenshots/nav_using_gtk_ss/gtk.png)
 
 ## Application Interface using Python and C
-![Interface using Python and C](screenshots/nav_using_python_ss/browserPython.png)
+![Interface using Python and C](screenshots/nav_using_py_ss/browserPython.png)
 
 ---
 
