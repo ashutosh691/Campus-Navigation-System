@@ -1,107 +1,256 @@
-Campus Navigation System
+# Campus Navigation System 🗺️
 
-This project is a C-based graphical navigation application that finds the shortest path between two points on a university campus map. It uses a graph data structure to represent the campus, the Haversine formula to calculate real-world distances, and provides both Dijkstra's and A* algorithms for pathfinding.
+This project is a **C-based graphical navigation application** that finds the shortest path between two points on a university campus map.
 
-The application is built with GTK 4 for a modern, visual, and interactive user interface that displays the campus map and the calculated route.
+The system models the campus as a **graph data structure**, calculates real-world distances using the **Haversine formula**, and supports **Dijkstra's Algorithm** and **A* (A-star) Algorithm** for efficient pathfinding.
 
-Features
+The application uses **GTK 4** and **Cairo graphics** to provide a modern, interactive visualization of the campus map and the computed navigation route.
 
-Visual Map Display: Renders the campus map (nodes and edges) in a resizable window using the Cairo 2D graphics library.
+---
 
-Correct Scaling: The map preserves its real-world aspect ratio, ensuring it never looks stretched or distorted, regardless of window size.
+# Features
 
-Dual Algorithms: Allows the user to select between:
+## Visual Map Display
+- Renders the campus map using **Cairo 2D graphics** inside a GTK 4 window.
+- Displays nodes (locations) and edges (paths) visually.
 
-Dijkstra's Algorithm: Guarantees the shortest path.
+## Correct Map Scaling
+- Preserves the **real-world aspect ratio** of the campus map.
+- Prevents distortion when resizing the window.
 
-*A (A-star) Algorithm:** A faster, optimized algorithm that uses a Haversine distance heuristic.
+## Dual Pathfinding Algorithms
 
-Interactive Controls:
+### Dijkstra's Algorithm
+- Guarantees the shortest possible path.
 
-Displays a scrollable list of all available nodes (locations) and their names.
+### A* (A-star) Algorithm
+- Uses a **Haversine distance heuristic** to guide the search.
+- Provides faster pathfinding in large graphs.
 
-Provides simple text entry for start and destination nodes.
+## Interactive Controls
+- Scrollable list of all campus nodes (locations).
+- Text input for **start and destination nodes**.
+- Shortest path highlighted in **red** on the map.
+- Displays **total path distance in kilometers**.
 
-Highlights the shortest path in red directly on the map.
+## Data-Driven Design
+Campus layout is loaded from a **simple `.txt` file** containing:
 
-Displays the total path distance in kilometers.
+- Node coordinates (latitude & longitude)
+- Node names
+- Connections between nodes
 
-Data-Driven: Loads campus layout, node locations (latitude/longitude), and connections from a simple .txt file.
+---
 
-Dependencies
+# Screenshots
 
-To build and run this application, you will need:
+## Application Interface
+![Interface](screenshots/interface.png)
 
-A C compiler (e.g., gcc)
+## Shortest Path Visualization
+![Shortest Path](screenshots/path_result.png)
 
-The make build tool
+## Node Selection Panel
+![Node Selection](screenshots/node_panel.png)
 
-The GTK 4 development libraries (e.g., libgtk-4-dev on Ubuntu/Debian)
+---
 
-How to Build
+# Dependencies
 
-A Makefile is provided for easy compilation.
+To build and run this application you need:
 
-Make sure all dependencies (especially libgtk-4-dev) are installed.
+- **C compiler** (gcc recommended)
+- **make** build tool
+- **GTK 4 development libraries**
 
-Open your terminal in the project's root directory.
+Ubuntu / Debian installation:
 
-Run the make command:
+```bash
+sudo apt install libgtk-4-dev
+```
 
+---
+
+# How to Build
+
+A **Makefile** is included for easy compilation.
+
+1. Install dependencies  
+2. Open a terminal in the project directory  
+3. Run:
+
+```bash
 make
+```
 
+This will generate the executable:
 
-This will compile all the .c files and create a single executable file named navigator-gui.
+```
+navigator-gui
+```
 
-How to Run
+---
 
-Ensure the dehradun_campus.txt file is in the same directory as the executable.
+# How to Run
 
-Run the application from your terminal:
+Make sure the map file exists:
 
+```
+dehradun_campus.txt
+```
+
+Run the program:
+
+```bash
 ./navigator-gui
+```
 
+---
 
-How It Works
+# How It Works
 
-On Startup: The application loads the dehradun_campus.txt file into the Graph data structure.
+## 1. Startup
+The application loads the campus graph from:
 
-File Loading (graph.c):
+```
+dehradun_campus.txt
+```
 
-The node and edge counts are read.
+---
 
-Each node (latitude, longitude, name) is loaded into an array.
+## 2. Graph Construction (graph.c)
 
-Each edge (connection) is read. The Haversine distance is automatically calculated as the edge's "weight" (in km) using the utils.c functions.
+- Reads node and edge counts
+- Loads node data:
+  - latitude
+  - longitude
+  - location name
+- Loads edges between nodes
+- Calculates edge weights using the **Haversine distance formula**
 
-Display (main-gtk.c):
+---
 
-The full list of nodes is shown in the side panel.
+## 3. Rendering (main-gtk.c)
 
-The on_draw function uses Cairo to render all nodes and edges onto the map canvas, correctly scaling the coordinates to fit the window.
+The **Cairo graphics library** draws:
 
-Pathfinding (main-gtk.c -> algorithms.c):
+- Nodes
+- Edges
+- Highlighted path
 
-The user enters a Start and End node ID and clicks "Find Shortest Path."
+Coordinates are scaled dynamically to match window size.
 
-The selected algorithm (Dijkstra or A*) is called.
+---
 
-*A Heuristic:** The A* algorithm is guided by the heuristic() function, which provides a "straight-line" (Haversine) distance from any node to the destination, allowing it to find the path much more efficiently.
+## 4. Pathfinding
 
-The resulting PathResult (containing the list of nodes and total distance) is returned.
+When the user presses **Find Shortest Path**:
 
-Result: The path is drawn in red on the map, and the total distance is reported in the status label.
+1. Start and destination nodes are read
+2. Selected algorithm is executed
 
-File Structure
+### Dijkstra
+Finds the exact shortest path.
 
-main-gtk.c: The main application file. Contains all GTK 4 UI code, event callbacks (button clicks), and the Cairo drawing logic.
+### A* (A-Star)
+Uses a heuristic:
 
-graph.h / graph.c: Defines the Graph, Node, and Edge data structures. Handles creating/destroying the graph and loading it from the .txt file.
+```
+heuristic(node) = Haversine distance to destination
+```
 
-algorithms.h / algorithms.c: Implements the dijkstra_shortest_path and a_star_shortest_path algorithms, as well as the internal priority queue.
+This allows faster search.
 
-utils.h / utils.c: Contains the haversine_distance formula and math constants (PI, EARTH_RADIUS_KM).
+---
 
-dehradun_campus.txt: The map data file for the Graphic Era campus.
+## 5. Result
 
-Makefile: The build script.
+The algorithm returns:
+
+```
+PathResult
+```
+
+Which contains:
+
+- list of nodes in the shortest path
+- total path distance
+
+The path is then:
+
+- drawn in **red**
+- distance displayed in the UI
+
+---
+
+# Project Structure
+
+```
+Campus-Navigation-System
+│
+├── main-gtk.c
+├── graph.c
+├── graph.h
+├── algorithms.c
+├── algorithms.h
+├── utils.c
+├── utils.h
+│
+├── screenshots
+│   ├── interface.png
+│   ├── path_result.png
+│   └── node_panel.png
+│
+├── dehradun_campus.txt
+├── Makefile
+└── README.md
+```
+
+### File Descriptions
+
+**main-gtk.c**
+- GTK UI code
+- Event callbacks
+- Cairo drawing logic
+
+**graph.c / graph.h**
+- Graph data structures
+- File loading
+- Graph initialization
+
+**algorithms.c / algorithms.h**
+- Dijkstra algorithm
+- A* algorithm
+- Priority queue implementation
+
+**utils.c / utils.h**
+- Haversine distance formula
+- Mathematical constants
+
+**dehradun_campus.txt**
+- Campus map data
+
+**Makefile**
+- Build configuration
+
+---
+
+# Future Improvements
+
+- Step-by-step path visualization
+- Zoom and pan support
+- Multiple campus maps
+- GUI node selection
+- Real-time navigation simulation
+
+---
+
+# Author
+
+**Ashutosh Upreti**
+
+GitHub  
+https://github.com/ashutosh691
+
+LinkedIn  
+https://www.linkedin.com/in/ashutosh-upreti-835540321
