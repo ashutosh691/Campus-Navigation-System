@@ -44,14 +44,11 @@ Campus layout is loaded from a **simple `.txt` file** containing:
 
 # Screenshots
 
-## Application Interface
-![Interface](screenshots/interface.png)
+## Application Interface using Gtk
+![Interface using GTK](screenshots/nav_using_gtk_ss/gtk.png)
 
-## Shortest Path Visualization
-![Shortest Path](screenshots/path_result.png)
-
-## Node Selection Panel
-![Node Selection](screenshots/node_panel.png)
+## Application Interface using Python and C
+![Interface using Python and C](screenshots/nav_using_python_ss/browserPython.png)
 
 ---
 
