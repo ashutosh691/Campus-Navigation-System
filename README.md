@@ -253,6 +253,5 @@ LinkedIn
 https://www.linkedin.com/in/ashutosh-upreti-835540321
 
 
-
 ## Note 
 - The provided steps are for gtk version
